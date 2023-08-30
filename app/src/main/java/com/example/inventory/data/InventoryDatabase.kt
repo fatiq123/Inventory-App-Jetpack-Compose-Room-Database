@@ -24,11 +24,8 @@ abstract class InventoryDatabase : RoomDatabase() {
              synchronized block means that only one thread of execution at a time can enter this block of code,
              which makes sure the database only gets initialized once.*/
             return Instance ?: synchronized(this) {
-                /*Multiple threads can potentially ask for a database instance at the same time, which results in two databases
-                 instead of one. This issue is known as a race condition. Wrapping the code to get the database
-                 inside a synchronized block means that only one thread of execution at a time can enter this block
-                  of code, which makes sure the database only gets initialized once.*/
                 Room.databaseBuilder(context, InventoryDatabase::class.java, "item_database")
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also {
                         Instance = it   /*to keep a reference to the recently created db instance.*/
