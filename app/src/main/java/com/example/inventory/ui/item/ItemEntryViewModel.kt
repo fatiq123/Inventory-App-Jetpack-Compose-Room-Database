@@ -21,12 +21,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
 
 /**
  * ViewModel to validate and insert items in the Room database.
  */
-class ItemEntryViewModel : ViewModel() {
+class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewModel() {
 
     /**
      * Holds current item ui state
@@ -48,6 +49,18 @@ class ItemEntryViewModel : ViewModel() {
             name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
         }
     }
+    /*The above function checks if the name, price, and quantity are empty.
+    You use this function to verify user input before adding or updating the entity in the database.*/
+
+
+
+    /*This function adds the data to the database in a non-blocking way.*/
+    suspend fun saveItem() {
+        if (validateInput()) {
+            itemsRepository.insertItem(item = itemUiState.itemDetails.toItem())
+        }
+    }
+
 }
 
 /**
@@ -70,6 +83,8 @@ data class ItemDetails(
  * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
  * [ItemDetails.quantity] is not a valid [Int], then the quantity will be set to 0
  */
+
+/* 1. The ItemDetails.toItem() extension function converts the ItemUiState UI state object to the Item entity type*/
 fun ItemDetails.toItem(): Item = Item(
     id = id,
     name = name,
@@ -84,6 +99,7 @@ fun Item.formatedPrice(): String {
 /**
  * Extension function to convert [Item] to [ItemUiState]
  */
+/* 2. The Item.toItemUiState() extension function converts the Item Room entity object to the ItemUiState UI state type.*/
 fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState(
     itemDetails = this.toItemDetails(),
     isEntryValid = isEntryValid
@@ -92,9 +108,12 @@ fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState
 /**
  * Extension function to convert [Item] to [ItemDetails]
  */
+/* 3. The Item.toItemDetails() extension function converts the Item Room entity object to the ItemDetails. */
 fun Item.toItemDetails(): ItemDetails = ItemDetails(
     id = id,
     name = name,
     price = price.toString(),
     quantity = quantity.toString()
 )
+
+
